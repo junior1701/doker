@@ -24,3 +24,4 @@ final class Clients extends AbstractMigration
             ->create();
     }
 }
+

@@ -24,4 +24,3 @@ final class Companies extends AbstractMigration
             ->create();
     }
 }
-
