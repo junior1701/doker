@@ -8,6 +8,8 @@ use app\controller\Fornecedor;
 use app\controller\PaymentTerms;
 use app\controller\Home;
 use Slim\Routing\RouteCollectorProxy;
+use app\controller\Sale;
+
 
 $app->get('/', Home::class . ':home'); #->add(Auth::route());
 $app->get('/home', Home::class . ':home'); #->add(Auth::route());
@@ -22,7 +24,10 @@ $app->group('/login', function (RouteCollectorProxy $group) {
     $group->post('/autenticar', Login::class . ':autenticar');
 });
 
-
+$app->group('/venda', function (RouteCollectorProxy $group) {
+    $group->get('/lista', Sale::class . ':lista');
+    $group->get('/cadastro', Sale::class . ':cadastro');
+});
 $app->group('/usuario', function (RouteCollectorProxy $group) {
     $group->get('/lista', User::class . ':lista'); #->add(Auth::route());
     $group->get('/cadastro', User::class . ':cadastro'); #->add(Auth::route());
