@@ -17,9 +17,11 @@ const tabela = new $('#tabela').DataTable({
         searchPlaceholder: 'Digite sua pesquisa...'
     },
     ajax: {
-        url: '/cliente/listcliente',
+        url: '/cliente/lista',
         type: 'POST'
     }
+
+    
 });
 
 async function Delete(id) {
