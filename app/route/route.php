@@ -6,10 +6,10 @@ use app\controller\Login;
 use app\controller\Empresa;
 use app\controller\Fornecedor;
 use app\controller\PaymentTerms;
+use app\controller\Produto;
+use app\controller\Sale;
 use app\controller\Home;
 use Slim\Routing\RouteCollectorProxy;
-use app\controller\Sale;
-
 
 $app->get('/', Home::class . ':home'); #->add(Auth::route());
 $app->get('/home', Home::class . ':home'); #->add(Auth::route());
@@ -18,16 +18,14 @@ $app->get('/home', Home::class . ':home'); #->add(Auth::route());
 $app->get('/login', Login::class . ':login');
 
 $app->group('/home', function (RouteCollectorProxy $group) {
+    #$group->post('/tema', Home::class . ':tema');
 });
 $app->group('/login', function (RouteCollectorProxy $group) {
     $group->post('/precadastro', Login::class . ':precadastro');
     $group->post('/autenticar', Login::class . ':autenticar');
 });
 
-$app->group('/venda', function (RouteCollectorProxy $group) {
-    $group->get('/lista', Sale::class . ':lista');
-    $group->get('/cadastro', Sale::class . ':cadastro');
-});
+
 $app->group('/usuario', function (RouteCollectorProxy $group) {
     $group->get('/lista', User::class . ':lista'); #->add(Auth::route());
     $group->get('/cadastro', User::class . ':cadastro'); #->add(Auth::route());
@@ -71,8 +69,19 @@ $app->group('/fornecedor', function (RouteCollectorProxy $group) {
     $group->post('/insert', Fornecedor::class . ':insert');
     $group->post('/delete', Fornecedor::class . ':delete');
 });
+$app->group('/produto', function (RouteCollectorProxy $group) {
+    $group->get('/lista', Produto::class . ':lista'); #->add(Auth::route());
+    $group->get('/cadastro', Produto::class . ':cadastro'); #->add(Auth::route());
+    $group->get('/alterar/{id}', Produto::class . ':alterar'); #->add(Auth::route());
+    $group->get('/print', Produto::class . ':print');
+    $group->post('/update', Produto::class . ':update');
+    $group->post('/listproduto', Produto::class . ':listproduto');
+    $group->post('/insert', Produto::class . ':insert');
+    $group->post('/delete', Produto::class . ':delete');
+});
 
 $app->group('/pagamento', function (RouteCollectorProxy $group) {
     $group->get('/lista', PaymentTerms::class . ':lista');
     $group->get('/cadastro', PaymentTerms::class . ':cadastro');
+    $group->get('/alterar/{id}', PaymentTerms::class . ':alterar');
 });
