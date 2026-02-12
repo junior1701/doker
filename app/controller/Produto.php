@@ -3,13 +3,12 @@
 namespace app\controller;
 
 use app\database\builder\InsertQuery;
-use app\database\builder\DeleteQuery;
 use app\database\builder\SelectQuery;
 use app\database\builder\UpdateQuery;
 
 class Produto extends Base
 {
-
+    
     public function lista($request, $response)
     {
         $dadosTemplate = [
@@ -81,11 +80,13 @@ class Produto extends Base
         $orderField = $fields[$order];
         #O termo pesquisado
         $term = $form['search']['value'];
-        $query = SelectQuery::select()->from('product');
+        $query = SelectQuery::select()->from('view_product');
         if (!is_null($term) && ($term !== '')) {
             $query
-                ->where('id', 'ilike', "%{$term}%", 'or')
+                ->where('id', 'ilike', "%{$term}%")
                 ->where('nome', 'ilike', "%{$term}%", 'or')
+                ->where('codigo_barra', 'ilike', "%{$term}%", 'or')
+                ->where('descricao_curta', 'ilike', "%{$term}%", 'or')
                 ->where('descricao', 'ilike', "%{$term}%", 'or')
                 ->where('preco_custo', 'ilike', "%{$term}%", 'or')
                 ->where('preco_venda', 'ilike', "%{$term}%", 'or');
@@ -104,12 +105,14 @@ class Produto extends Base
                 $value['descricao'],
                 $value['preco_custo'],
                 $value['preco_venda'],
-                "<a href=\"/produto/alterar/" . $value['id'] . "\" class=\"btn btn-warning\">Alterar</a>
-
-                <button type='button'  onclick='Delete(" . $value['id'] . ");' class='btn btn-danger'>
-                <i class=\"bi bi-trash-fill\"></i>
-                Excluir
-                </button>"
+                "<div class='d-flex gap-2'>
+    <a href='/produto/alterar/{$value['id']}' class='btn btn-warning btn-sm px-2 shadow-sm' style='white-space: nowrap; font-weight: 500;'>
+        <i class='bi bi-pencil-square'></i> Alterar
+    </a>
+    <button type='button' onclick='Delete({$value['id']});' class='btn btn-danger btn-sm px-2 shadow-sm' style='white-space: nowrap; font-weight: 500;'>
+        <i class='bi bi-trash-fill'></i> Excluir
+    </button>
+</div>"
             ];
         }
         $data = [
@@ -149,10 +152,10 @@ class Produto extends Base
     {
         try {
             $id = $_POST['id'];
-            $IsDelete = DeleteQuery::table('product')
+            $IsDelete = UpdateQuery::table('product')
+                ->set(['excluido' => true])
                 ->where('id', '=', $id)
-                ->delete();
-
+                ->update();
             if (!$IsDelete) {
                 echo json_encode(['status' => false, 'msg' => $IsDelete, 'id' => $id]);
                 die;
@@ -188,32 +191,27 @@ class Produto extends Base
             return $this->SendJson($response, ['status' => false, 'msg' => 'Restrição: ' . $e->getMessage(), 'id' => 0], 500);
         }
     }
-    public function print($request, $response)
+    
+     public function listproductdata($request, $response)
     {
-        try {
-            // 1. Busca os dados na tabela de usuários
-            // Ajuste os nomes das colunas (ex: nome, cpf, celular) conforme seu banco
-            $produto = SelectQuery::select('id, nome, cpf')
-                ->from('product')
-                ->order('nome', 'ASC')
-                ->fetchAll();
-
-            // 2. Monta o array de dados para o template
-            $dadosTemplate = [
-                'titulo'   => 'Relatório de Produtos',
-                'produto' => $produto,
-                'total'    => count($produto)
-            ];
-
-            // 3. Renderiza o template específico de usuários
-            // Certifique-se de que o arquivo se chama 'reportproduto.html' na pasta reports
-            return $this->getTwig()
-                ->render($response, $this->setView('reports/reportproduto'), $dadosTemplate)
-                ->withHeader('Content-Type', 'text/html')
-                ->withStatus(200);
-        } catch (\Exception $e) {
-            $response->getBody()->write("Erro ao gerar relatório: " . $e->getMessage());
-            return $response->withStatus(500);
+        echo('oi');
+        die;
+        $form = $request->getParsedBody();
+        $term = $form['term'] ?? null;
+        $query = SelectQuery::select('id, nome, codigo_barra ')->from('product');
+        if ($term != null) {
+            $query->where('codigo_barra', 'ILIKE', "%{$term}%", 'or')
+                ->where('nome', 'ILIKE', "%{$term}%");
         }
+        $data = [];
+        $results = $query->fetchAll();
+        foreach ($results as $key => $item) {
+            $data['results'][$key] = [
+                'id' => $item['id'],
+                'text' => $item['nome'] . ' - Cód. barra: ' . $item['codigo_barra']
+            ];
+        }
+        $data['pagination'] = ['more' => true];
+        return $this->SendJson($response, $data);
     }
 }
